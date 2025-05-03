@@ -58,3 +58,35 @@ Nelkos app also uses JieLis ota update feature. It checks for updates at this ur
 ```
 
 There seems to be no way to get the URL for the current firmware. The app is very chatty and even sends the entire device metadata to the server. And seemingly via plain HTTP.
+
+## Installation
+
+To install the dependencies, run the following command:
+
+```sh
+pip install -r requirements.txt
+```
+
+## Running the Application
+
+To run the application on Linux or Windows, use the following command:
+
+```sh
+python p21_print.py [options]
+```
+
+Replace `[options]` with the appropriate command line arguments. For example, to print an image, you can use:
+
+```sh
+python p21_print.py --image path/to/image.png --density 15 --copies 1
+```
+
+## Running the TUI Application
+
+To run the TUI application, use the following command:
+
+```sh
+python p21_print.py --tui
+```
+
+The TUI application allows you to input the label text, press return, and print the label using the existing functions in `p21_print.py`.

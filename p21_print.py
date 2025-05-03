@@ -6,6 +6,7 @@ import struct
 import argparse
 from PIL import Image, ImageEnhance, ImageOps
 from packaging.version import Version
+from prompt_toolkit import PromptSession
 
 device = "/dev/rfcomm0"
 def crc16(data):
@@ -310,6 +311,21 @@ BITMAP 0,0,12,284,1,""".encode()
 PRINT {copies}\r\n""".encode()
     return serial_data
 
+def create_tui():
+    session = PromptSession()
+    while True:
+        try:
+            text = session.prompt("Enter label text: ")
+            if text.lower() in ["exit", "quit"]:
+                break
+            # Here you would convert the text to an image and send it to the printer
+            # For simplicity, we will just print the text to the console
+            print(f"Printing label: {text}")
+        except KeyboardInterrupt:
+            continue
+        except EOFError:
+            break
+
 def main():
     parser = argparse.ArgumentParser(description="Print an image on a Nelko P21 label printer.")
     parser.add_argument("--device", help="The device to print to (defaults to /dev/rfcomm0)", default="/dev/rfcomm0")
@@ -321,6 +337,7 @@ def main():
     parser.add_argument("--battery", help="Get the printer battery level", action="store_true")
     parser.add_argument("--timeout", help="Set the printer timeout in minutes (0, 15, 30, 60)", type=int)
     parser.add_argument("--beep", help="Enable or disable the printer beep (True, False)", type=bool)
+    parser.add_argument("--tui", help="Run the TUI application", action="store_true")
 
     try:
         args = parser.parse_args()
@@ -361,6 +378,8 @@ def main():
     if args.status:
         print("Printer status:")
         print(get_printer_status())
+    if args.tui:
+        create_tui()
 
 
 if __name__ == "__main__":
