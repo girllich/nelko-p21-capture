@@ -4,7 +4,7 @@ from webbrowser import get
 import serial
 import struct
 import argparse
-from PIL import Image, ImageEnhance, ImageOps
+from PIL import Image, ImageEnhance, ImageOps, ImageDraw, ImageFont
 from packaging.version import Version
 from prompt_toolkit import PromptSession
 
@@ -234,6 +234,28 @@ def load_image(image):
 
     return bitdata
 
+def text_to_image(text):
+    # Create a blank image with white background
+    image = Image.new('1', (96, 284), 1)
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.load_default()
+
+    # Calculate text size and position
+    text_width, text_height = draw.textsize(text, font=font)
+    text_x = (image.width - text_width) // 2
+    text_y = (image.height - text_height) // 2
+
+    # Draw the text on the image
+    draw.text((text_x, text_y), text, font=font)
+
+    # Convert the image to a bit array
+    bitdata = image.tobytes()
+    # Pad the image to 3408 bytes, so the printer doesn't fill the rest with black.
+    if len(bitdata) < 3408:
+       bitdata = bitdata.ljust(3408- len(bitdata), b"\xff")
+
+    return bitdata
+
 def get_readiness_status():
     short_status = send_command("\x1b!?")
     unpacked_status = struct.unpack(">B", short_status)
@@ -318,8 +340,12 @@ def create_tui():
             text = session.prompt("Enter label text: ")
             if text.lower() in ["exit", "quit"]:
                 break
-            # Here you would convert the text to an image and send it to the printer
-            # For simplicity, we will just print the text to the console
+            # Convert the text to an image
+            bitdata = text_to_image(text)
+            # Build the print command with the image data
+            print_command = build_print_command(bitdata, 15, 1)
+            # Send the print command to the printer
+            send_command(print_command)
             print(f"Printing label: {text}")
         except KeyboardInterrupt:
             continue
